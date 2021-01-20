@@ -24,5 +24,22 @@ Fig. \ref{snakes_and_ladders} shows a histogram with the number of transitions r
 	\label{snakes_and_ladders}
 \end{figure}
 
+\paragraph{3.}
+We can model the ``frog puzzle'' as a finite Markov process with the following transition model,
+$$ \text{insert} $$
+
+Fig. \ref{frog_puzzle} shows a histogram with the number of hops used to jump across the river/pond/pads over 1000 trials. See $\texttt{frog.py}$.
+\begin{figure}
+	\centering
+	\includegraphics[width=.5\textwidth]{frog_length_histogram.png}
+	\caption{Histogram showing the number of transitions to complete ``frog puzzle" for 1000 trials.}
+	\label{frog_puzzle}
+\end{figure}
+
+\paragraph{4.}
+The reward model to compute the expected number of rolls to complete the game should simply be 1 for each transition, undiscounted. Computing the expectation of this reward exact corresponds to computing the expected number of rolls to complete the game.
+
+\paragraph{5.}
+
 
 \end{document}

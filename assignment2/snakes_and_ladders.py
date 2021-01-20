@@ -69,6 +69,26 @@ def snake_or_ladder(pos):
     else:
         return np.minimum(100, pos)
 
+def end_game_probs(current, next):
+    if current == 95:
+        if next == 100:
+            return 2.0 / 6.0
+    if current == 96: 
+        if next == 100:
+            return 3.0 / 6.0
+    if current == 97:
+        if next == 100:
+            return 4.0 / 6.0
+    if current == 98:
+        if next == 100:
+            return 5.0 / 6.0
+    if current == 99:
+        if next == 100:
+            return 1.0
+    
+    return 1.0 / 6.0
+
+
 class SnakesAndLaddersMPFinite(FiniteMarkovProcess[SnakesAndLaddersState]):
 
     def __init__(
@@ -83,7 +103,7 @@ class SnakesAndLaddersMPFinite(FiniteMarkovProcess[SnakesAndLaddersState]):
         for pos in range(1,100+1):
             state = SnakesAndLaddersState(pos)
             state_probs_map: Mapping[SnakesAndLaddersState, float] = {
-                SnakesAndLaddersState(snake_or_ladder(pos + j)) : 1.0 for j in range(1, 6+1)
+                SnakesAndLaddersState(snake_or_ladder(pos + j)) : end_game_probs(pos, snake_or_ladder(pos + j)) for j in range(1, 6+1)
             }
             d[state] = Categorical(state_probs_map)
         return d
@@ -118,7 +138,7 @@ if __name__ == '__main__':
 
     # print("Transition Map")
     # print("--------------")
-    # print(si_mp)
+    print(si_mp)
 
     # print("Stationary Distribution")
     # print("-----------------------")
