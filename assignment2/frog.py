@@ -75,9 +75,10 @@ if __name__ == '__main__':
 
     # traces
     T = 10
-    num_traces = 1000
+    num_traces = 10000
     traces = frog_traces(T, num_traces)
-    # print(traces)
+    print("traces:")
+    print(traces)
 
     len_game = []
     for i in range(num_traces):
@@ -88,11 +89,14 @@ if __name__ == '__main__':
                 j = T
             else:
                 j += 1
+    print("length of game:")
     print(len_game)
-    print()
+    print("mean of game:")
+    print(np.mean(len_game))
 
-    plt.hist(len_game, density=False, bins=2)  # density=False would make counts
+    plt.hist(len_game, density=False, bins=range(10))  # density=False would make counts
     plt.ylabel('count')
     plt.xlabel('length of game')
+    plt.title('Frog puzzle (%i trials, mean: %.2f)'%(num_traces, np.mean(len_game)))
     plt.show()
     # plot.savefig('snakes_and_ladders_length_histogram.png')

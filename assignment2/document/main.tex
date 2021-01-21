@@ -25,21 +25,20 @@ Fig. \ref{snakes_and_ladders} shows a histogram with the number of transitions r
 \end{figure}
 
 \paragraph{3.}
-We can model the ``frog puzzle'' as a finite Markov process with the following transition model,
-$$ \text{insert} $$
+We can model the ``frog puzzle'' with $N$ pads as a finite Markov process. The state space $\mathcal{S} = \{s_0,\dots,s_{N}\}$ has an initial state $s_0$ and a terminal state $\mathcal{T} = \{s_{N}\}$. The transition model is, $\mathcal{P}(S_{t+1} = s_{t+i}, \forall i \in [1, N-t] | S_t = s_t) = \frac{1}{N - t}$. This encodes that at each pad, the frog has equal probability of hopping on any of the remaining pads.
 
-Fig. \ref{frog_puzzle} shows a histogram with the number of hops used to jump across the river/pond/pads over 1000 trials. See $\texttt{frog.py}$.
+The problem is solved numerically for $N = 10$ by generating traces for the Markov process. Fig. \ref{frog_puzzle} shows a histogram with the number of hops used to jump across the river/pond/pads over 10000 trials. See $\texttt{frog.py}$. The mean number of hops of the trials was 2.8132.
 \begin{figure}
 	\centering
-	\includegraphics[width=.5\textwidth]{frog_length_histogram.png}
-	\caption{Histogram showing the number of transitions to complete ``frog puzzle" for 1000 trials.}
+	\includegraphics[width=.5\textwidth]{frog_puzzle_histogram.png}
+	\caption{Histogram showing the number of transitions to complete ``frog puzzle" for 10000 trials.}
 	\label{frog_puzzle}
 \end{figure}
 
 \paragraph{4.}
-The reward model to compute the expected number of rolls to complete the game should simply be 1 for each transition, undiscounted. Computing the expectation of this reward exact corresponds to computing the expected number of rolls to complete the game.
+The reward model to compute the expected number of rolls to complete the game should simply be 1 for each transition, undiscounted. Computing the expectation of this reward exact corresponds to computing the expected number of rolls to complete the game. See $\texttt{snakes\_and\_ladders\_mrp.py}$.
 
 \paragraph{5.}
-
+The first stock example has been extended, see \texttt{stonks.py}. The reward for a given stock price can be set by defining the function \texttt{stock_reward}. The cumulative discount reward can then be compute by simulating the MRP for a large number of time steps. The value function for a given initial state can be compute by approximating the expected value function a state using many traces.
 
 \end{document}
