@@ -12,7 +12,7 @@
 \begin{document}
 \maketitle
 
-\paragraph{1. Bellman Policy Equations (discrete policy)}
+\paragraph{1.} Bellman Policy Equations (discrete policy).
 $$V^{\pi_D} = \mathcal{R}^{\pi_D}(s) + \gamma \sum\limits_{s' \in \mathcal{N}} \mathcal{P}^{\pi_D}(s, s') \cdot V^{\pi_D}(s')$$
 
 $$Q^{\pi_D}(s,a) = \mathcal{R}^{\pi_D}(s, a) + \gamma \sum\limits_{s' \in \mathcal{N}} \mathcal{P}^{\pi_D}(s, s') \cdot Q^{\pi_D}(s', a')$$
@@ -45,7 +45,19 @@ Plugging into this result back into the Optimality Equation, $f(a) = 1 + \gamma 
 
 $$V^{*}(s) = 1 + \gamma V^{*}(s) - \frac{(1 + \gamma (V^{*}(s+1) - V^{*}(s))^2)}{16}$$
 
-\paragraph{3. }
+\paragraph{3.} Frog escape. For a scenario with $n$ lilypads, the state space and terminal states are: 
+$$\mathcal{S} : \{0, \dots, n\}, \quad \mathcal{T} : \{0, n\},$$
+and the action space is:
+$$\mathcal{A} : \{A, B\}.$$ For non-terminal states, i.e., $S_t \in \mathcal{S} - \mathcal{T}$, the transition probabilities are:
+$$\mathcal{P}(S_{t+1} = i-1 | S_t = i, A_t = A) = \frac{i}{n}$$
+$$\mathcal{P}(S_{t+1} = i+1 | S_t = i, A_t = A) = \frac{n-i}{n}$$
+
+$$\mathcal{P}(S_{t+1} = j,\,\mbox{for}\, j \in \{0, \dots, n\} | S_t = i, A_t = B) = \frac{1}{n}$$
+
+The reward function is:
+$$\mathcal{R}(S_t = 0, a) = -1 $$
+$$\mathcal{R}(S_t = n, a) = +1 $$
+$$\mathcal{R}(S_{t} = j,\,\mbox{for}\,j \in \{1, \dots, n-1\}, a) = 0 $$
 
 %\begin{figure}
 %	\centering
