@@ -104,6 +104,7 @@ if __name__ == '__main__':
 
     print("Implied MP Stationary Distribution")
     print("-----------------------")
+    print(implied_mrp.get_transition_matrix())
     implied_mrp.display_stationary_distribution()
     print()
 
