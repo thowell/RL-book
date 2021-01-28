@@ -48,14 +48,15 @@ class FrogEscapeMDP(FiniteMarkovDecisionProcess[FrogEscapeState, int]):
 
             # action A
             sr_probs_dict_A: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(FrogEscapeState(i-1), 0.0 if i-1 == 0 else 0.0) : 1.0}
-                        # {(FrogEscapeState(i-1), 0.0 if i-1 != 0 else -1.0): i/self.n, (FrogEscapeState(i+1), 0.0 if i+1 != self.n else 1.0): (self.n - i)/self.n}
+                        {(FrogEscapeState(i-1), 0.0 if i-1 != 0 else -1.0): i/self.n, (FrogEscapeState(i+1), 0.0 if i+1 != self.n else 1.0): (self.n - i)/self.n}
+                                        # {(FrogEscapeState(i-1), 0.0 if i-1 == 0 else 0.0) : 1.0}
+
             di[0] = Categorical(sr_probs_dict_A)
 
             # action B
             sr_probs_dict_B: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(FrogEscapeState(i+1), 0.0 if i+1 == self.n else 0.0) : 1.0}
-                        # {(FrogEscapeState(j), -1.0 if j == 0 else (1.0 if j == self.n else 0.0)): 1/self.n if j != i else 0.0 for j in range(self.n)}
+                        {(FrogEscapeState(j), -1.0 if j == 0 else (1.0 if j == self.n else 0.0)): 1/self.n if j != i else 0.0 for j in range(self.n+1)}
+                        # {(FrogEscapeState(i+1), 0.0 if i+1 == self.n else 0.0) : 1.0}
 
             di[1] = Categorical(sr_probs_dict_B)
 
@@ -100,11 +101,9 @@ if __name__ == '__main__':
         #  Categorial({}) if i == 0 else (Constant(1) if i == fe_mdp.n else Constant(1)) for i in range(fe_mdp.n+1)}
     )
 
-    print(fdp.act(FrogEscapeState(1)).sample())
-
-    # print("Policy Map")
-    # print("----------")
-    # print(fdp)
+    print("Policy Map")
+    print("----------")
+    print(fdp)
 
     implied_mrp: FiniteMarkovRewardProcess[FrogEscapeState] =\
         fe_mdp.apply_finite_policy(fdp)
