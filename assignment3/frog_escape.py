@@ -34,13 +34,7 @@ class FrogEscapeMDP(FiniteMarkovDecisionProcess[FrogEscapeState, int]):
 
         # 0 state
         state0: FrogEscapeState = FrogEscapeState(0)
-        d0: Dict[int, Categorical[Tuple[FrogEscapeState, float]]] = {}
-        sr_probs_dict: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(state0, -1.0): 1.0}
-        d0[0] = Categorical(sr_probs_dict)
-        d0[1] = Categorical(sr_probs_dict)
-
-        d[state0] = d0
+        d[state0] = None
 
         for i in range(1,self.n):
             state: FrogEscapeState = FrogEscapeState(i)
@@ -49,14 +43,12 @@ class FrogEscapeMDP(FiniteMarkovDecisionProcess[FrogEscapeState, int]):
             # action A
             sr_probs_dict_A: Dict[Tuple[FrogEscapeState, float], float] =\
                         {(FrogEscapeState(i-1), 0.0 if i-1 != 0 else -1.0): i/self.n, (FrogEscapeState(i+1), 0.0 if i+1 != self.n else 1.0): (self.n - i)/self.n}
-                                        # {(FrogEscapeState(i-1), 0.0 if i-1 == 0 else 0.0) : 1.0}
 
             di[0] = Categorical(sr_probs_dict_A)
 
             # action B
             sr_probs_dict_B: Dict[Tuple[FrogEscapeState, float], float] =\
                         {(FrogEscapeState(j), -1.0 if j == 0 else (1.0 if j == self.n else 0.0)): 1/self.n if j != i else 0.0 for j in range(self.n+1)}
-                        # {(FrogEscapeState(i+1), 0.0 if i+1 == self.n else 0.0) : 1.0}
 
             di[1] = Categorical(sr_probs_dict_B)
 
@@ -65,27 +57,22 @@ class FrogEscapeMDP(FiniteMarkovDecisionProcess[FrogEscapeState, int]):
 
         # n state
         staten: FrogEscapeState = FrogEscapeState(self.n)
-        dn: Dict[int, Categorical[Tuple[FrogEscapeState, float]]] = {}
-        sr_probs_dict: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(staten, 1.0): 1.0}
-        dn[0] = Categorical(sr_probs_dict)
-        dn[1] = Categorical(sr_probs_dict)
-        d[staten] = dn
+        d[staten] = None
 
         return d
 
-    def is_terminal(self, state) -> bool:
-        if state.pad() == 0 or state.pad() == self.n:
-            return True
+    # def is_terminal(self, state) -> bool:
+    #     if state.pad() == 0 or state.pad() == self.n:
+    #         return True
 
 if __name__ == '__main__':
     from pprint import pprint
 
-    user_gamma = 0.99
+    user_gamma = 1.0
 
     fe_mdp: FiniteMarkovDecisionProcess[FrogEscapeState, int] =\
         FrogEscapeMDP(
-            n = 2,
+            n = 3,
             initial_pad = 1
         )
 
@@ -96,7 +83,7 @@ if __name__ == '__main__':
 
     # setup deterministic policy
     fdp: FinitePolicy[FrogEscapeState, int] = FinitePolicy(
-        {FrogEscapeState(i): Categorical({0: 0.5, 1: 0.5}) for i in range(fe_mdp.n+1)}
+        {FrogEscapeState(i): Categorical({0: 0.5, 1: 0.5}) for i in range(1, fe_mdp.n)}
         # {FrogEscapeState(i):
         #  Categorial({}) if i == 0 else (Constant(1) if i == fe_mdp.n else Constant(1)) for i in range(fe_mdp.n+1)}
     )
@@ -107,23 +94,23 @@ if __name__ == '__main__':
 
     implied_mrp: FiniteMarkovRewardProcess[FrogEscapeState] =\
         fe_mdp.apply_finite_policy(fdp)
-    # print("Implied MP Transition Map")
-    # print("--------------")
-    # print(FiniteMarkovProcess(implied_mrp.transition_map))
+    print("Implied MP Transition Map")
+    print("--------------")
+    print(FiniteMarkovProcess(implied_mrp.transition_map))
 
-    # print("Implied MRP Transition Reward Map")
-    # print("---------------------")
-    # print(implied_mrp)
+    print("Implied MRP Transition Reward Map")
+    print("---------------------")
+    print(implied_mrp)
 
     print("Implied MP Stationary Distribution")
     print("-----------------------")
     implied_mrp.display_stationary_distribution()
     print()
 
-    # print("Implied MRP Reward Function")
-    # print("---------------")
-    # implied_mrp.display_reward_function()
-    # print()
+    print("Implied MRP Reward Function")
+    print("---------------")
+    implied_mrp.display_reward_function()
+    print()
 
     # print("Implied MRP Value Function")
     # print("--------------")
