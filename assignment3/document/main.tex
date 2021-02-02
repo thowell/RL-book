@@ -55,14 +55,21 @@ $$\mathcal{P}(S_{t+1} = i-1 | S_t = i, A_t = A) = \frac{i}{n}$$
 $$\mathcal{P}(S_{t+1} = i+1 | S_t = i, A_t = A) = \frac{n-i}{n}$$
 $$\mathcal{P}(S_{t+1} = j,\,\mbox{for}\, j \in \{0, \dots, n\} | S_t = i, A_t = B) = \frac{1}{n}$$
 The reward function is:
-$$\mathcal{R}(S_t = 0, a) = -1 $$
+$$\mathcal{R}(S_t = 0, a) = 0 $$
 $$\mathcal{R}(S_t = n, a) = +1 $$
 $$\mathcal{R}(S_{t} = j,\,\mbox{for}\,j \in \{1, \dots, n-1\}, a) = 0 $$
 See $\texttt{frog\_escape.py}$.
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=.5\textwidth]{frog_escape_n6.png}
+	\caption{The optimal policy and value function--corresponding to the probability of escape--for Frog escape problem with $n = 6$.}
+\end{figure}
+(See the printouts from my code for optimal policies.)
+
 The optimal policy selects action $A$ for all states $s_t != 1$. In this case it is too risky to possibly select an action that may decrement (to the snake!) with probability $(\frac{i}{n}$. The probability of not ending up with the snake is the same for $A$ and $B$ in this state, but it's optimal to select $B$ since this may be closer to state $n$.
 
-(See the printouts from my code for optimal policies.)
+By setting the reward to $r_t = 1$ for escaping, along with discount factor $\gamma = 1$, the value function at each state is the probability of escape. 
 
 \paragraph{4.} 
 

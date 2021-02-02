@@ -42,13 +42,13 @@ class FrogEscapeMDP(FiniteMarkovDecisionProcess[FrogEscapeState, int]):
 
             # action A
             sr_probs_dict_A: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(FrogEscapeState(i-1), 0.0 if i-1 != 0 else -1.0): i/self.n, (FrogEscapeState(i+1), 0.0 if i+1 != self.n else 1.0): (self.n - i)/self.n}
+                        {(FrogEscapeState(i-1), 0.0 if i-1 != 0 else 0.0): i/self.n, (FrogEscapeState(i+1), 0.0 if i+1 != self.n else 1.0): (self.n - i)/self.n}
 
             di[0] = Categorical(sr_probs_dict_A)
 
             # action B
             sr_probs_dict_B: Dict[Tuple[FrogEscapeState, float], float] =\
-                        {(FrogEscapeState(j), -1.0 if j == 0 else (1.0 if j == self.n else 0.0)): 1/self.n if j != i else 0.0 for j in range(self.n+1)}
+                        {(FrogEscapeState(j), 0.0 if j == 0 else (1.0 if j == self.n else 0.0)): 1/self.n if j != i else 0.0 for j in range(self.n+1)}
 
             di[1] = Categorical(sr_probs_dict_B)
 
