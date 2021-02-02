@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     fe_mdp: FiniteMarkovDecisionProcess[FrogEscapeState, int] =\
         FrogEscapeMDP(
-            n = 3,
+            n = 6,
             initial_pad = 1
         )
 
@@ -102,10 +102,16 @@ if __name__ == '__main__':
     print("---------------------")
     print(implied_mrp)
 
-    print("Implied MP Stationary Distribution")
+    # print("Implied MP Stationary Distribution")
+    # print("-----------------------")
+    # print(implied_mrp.get_transition_matrix())
+    # implied_mrp.display_stationary_distribution()
+    # print()
+
+
+    print("Implied MP Value Function")
     print("-----------------------")
-    print(implied_mrp.get_transition_matrix())
-    implied_mrp.display_stationary_distribution()
+    print(implied_mrp.get_value_function_vec(gamma=user_gamma))
     print()
 
     print("Implied MRP Reward Function")
@@ -113,33 +119,33 @@ if __name__ == '__main__':
     implied_mrp.display_reward_function()
     print()
 
-    # print("Implied MRP Value Function")
-    # print("--------------")
-    # implied_mrp.display_value_function(gamma=user_gamma)
-    # print()
+    print("Implied MRP Value Function")
+    print("--------------")
+    implied_mrp.display_value_function(gamma=user_gamma)
+    print()
 
-    # from rl.dynamic_programming import evaluate_mrp_result
-    # from rl.dynamic_programming import policy_iteration_result
-    # from rl.dynamic_programming import value_iteration_result
+    from rl.dynamic_programming import evaluate_mrp_result
+    from rl.dynamic_programming import policy_iteration_result
+    from rl.dynamic_programming import value_iteration_result
 
-    # print("Implied MRP Policy Evaluation Value Function")
-    # print("--------------")
-    # pprint(evaluate_mrp_result(implied_mrp, gamma=user_gamma))
-    # print()
+    print("Implied MRP Policy Evaluation Value Function")
+    print("--------------")
+    pprint(evaluate_mrp_result(implied_mrp, gamma=user_gamma))
+    print()
 
-    # print("MDP Policy Iteration Optimal Value Function and Optimal Policy")
-    # print("--------------")
-    # opt_vf_pi, opt_policy_pi = policy_iteration_result(
-    #     fe_mdp,
-    #     gamma=user_gamma
-    # )
-    # pprint(opt_vf_pi)
-    # print(opt_policy_pi)
-    # print()
+    print("MDP Policy Iteration Optimal Value Function and Optimal Policy")
+    print("--------------")
+    opt_vf_pi, opt_policy_pi = policy_iteration_result(
+        fe_mdp,
+        gamma=user_gamma
+    )
+    pprint(opt_vf_pi)
+    print(opt_policy_pi)
+    print()
 
-    # print("MDP Value Iteration Optimal Value Function and Optimal Policy")
-    # print("--------------")
-    # opt_vf_vi, opt_policy_vi = value_iteration_result(fe_mdp, gamma=user_gamma)
-    # pprint(opt_vf_vi)
-    # print(opt_policy_vi)
-    # print()
+    print("MDP Value Iteration Optimal Value Function and Optimal Policy")
+    print("--------------")
+    opt_vf_vi, opt_policy_vi = value_iteration_result(fe_mdp, gamma=user_gamma)
+    pprint(opt_vf_vi)
+    print(opt_policy_vi)
+    print()
