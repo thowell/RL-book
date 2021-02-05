@@ -36,20 +36,27 @@ push!(R, (:s1, :a2) => 10.0)
 push!(R, (:s2, :a1) => 1.0)
 push!(R, (:s2, :a2) => -1.0)
 
-# discount factor 
+# discount factor
 γ = 1.0
 
-# value iteration
+# value function
 V = Dict()
 
 for s in S
     if s in N
         push!(V, s => maximum([R[s, a] for a in A]))
-    elseif s in T
+    else # terminal state
         push!(V, s => 0.0)
-    else
-        @error "value function initialization error"
     end
 end
 
-V
+# value iteration
+include("value_iteration.jl")
+V_new, Π = value_iteration(S, A, P, R, T = T, V = V, γ = γ, iter = 3)
+
+# a = Dict([i => Dict())
+# a[1] = Dict()
+# Q = Dict([s => Dict([a => rand(1)[1] for a in A]) for s in N])
+#
+maximum(Q[:s1])[2]
+argmax(Q[:s1])
