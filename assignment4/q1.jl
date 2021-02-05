@@ -52,4 +52,11 @@ end
 
 # value iteration
 include("value_iteration.jl")
-V_new, Π = value_iteration(S, N, A, R, P, V, γ = γ, iter = 10)
+V_new, Π = value_iteration(S, A, P, R, T = T, V = V, γ = γ, iter = 3)
+
+# a = Dict([i => Dict())
+# a[1] = Dict()
+# Q = Dict([s => Dict([a => rand(1)[1] for a in A]) for s in N])
+#
+maximum(Q[:s1])[2]
+argmax(Q[:s1])
