@@ -12,7 +12,7 @@ function value_iteration(S, A, P, R;
         for s in S
             if s in N
                 for a in A
-                    Q[s][a] = R[(s, a)] + γ * sum([P[(s, a, t)] * V[t] for t in S])
+                    Q[s][a] = sum([P[(s, a, t)] * (R[(s, a, t)] + γ * V[t]) for t in S])
                 end
                 @show s
                 @show Q

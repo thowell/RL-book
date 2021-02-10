@@ -9,7 +9,7 @@ function policy_evaluation(S, Π, P, R;
         for s in S
             if s in setdiff(S, T)
                 a = Π[s]
-                V_new[s] = R[(s, a)] + γ * sum([P[(s, a, t)] * V[t] for t in S])
+                V_new[s] = sum([P[(s, a, t)] * (R[(s, a, t)] + γ * V[t]) for t in S])
             else
                 V_new[s] = 0.0
             end
@@ -36,7 +36,7 @@ function policy_improvement(S, A, P, R;
 
     for s in N
         for a in A
-            Q[s][a] = R[(s, a)] + γ * sum([P[(s, a, t)] * V[t] for t in S])
+            Q[s][a] = sum([P[(s, a, t)] * (R[(s, a, t)] + γ * V[t]) for t in S])
         end
         @show s
         @show Q
