@@ -1,4 +1,6 @@
 # Job hopping
+include("initialize.jl")
+
 n = 5
 
 # states
@@ -14,15 +16,7 @@ A = [:accept, :reject]
 p = rand(n)
 p ./= sum(p) # normalize
 # sum(p)
-P = Dict()
-
-for s in S
-    for a in A
-        for t in S
-            push!(P, (s, a, t) => 0.0)
-        end
-    end
-end
+P = initialize_transitions(S, A)
 
 for i = 1:n
     # same job
@@ -47,17 +41,16 @@ end
 # reward function
 w0 = 1.0 * rand(n)[1] # unemployed reward
 w = rand(n)     # employed rewards
-R = Dict()
+R = initialize_transitions(S, A)
+
 for i = 1:n
     for a in A
-        R[(Symbol("e$i"), a)] = w[i]
-        R[(Symbol("u$i"), a)] = w0
+        for t in S
+            R[(Symbol("e$i"), a, t)] = w[i]
+            R[(Symbol("u$i"), a, t)] = w0
+        end
     end
 end
-
-# custom value iteration
-γ = 1.0
-V_vi, Π_vi = value_iteration_custom(S, A, P, R, T = T, γ = γ, iter = 100)
 
 function value_iteration_custom(S, A, P, R;
     V = Dict([s => 0.0 for s in S]),
@@ -90,4 +83,6 @@ function value_iteration_custom(S, A, P, R;
     return V, Π
 end
 
-v
+# custom value iteration
+γ = 1.0
+V_vi, Π_vi = value_iteration_custom(S, A, P, R, T = T, γ = γ, iter = 100)
