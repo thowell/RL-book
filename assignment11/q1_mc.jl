@@ -204,7 +204,7 @@ function monte_carlo(; iter = 1000, mode = :every)
     end
 
     # compute value function approximation
-    for s in S
+    for s in N
         Vmc[s] = Smc[s] / Nmc[s]
     end
 
@@ -218,3 +218,37 @@ for s in S
     Vmatrix_mc[s.x + 1, s.y + 1] = Vmc[s]
 end
 @show Vmatrix_mc
+
+# TD prediction
+function TD_prediction(; max_iter = 100)
+    Vtd = Dict([s => 0.0 for s in S]) # value function approximation
+    Ntd = Dict([s => 0 for s in S])   # counter
+
+    α = 1.0 # learning rate
+
+    for i = 1:max_iter
+        s = rand(S) # random initial state
+        while s ∉ T
+            Ntd[s] += 1
+            a = Π[s]
+            t = sample_next_state(s, a, S)
+            r = R[(s, a, t)]
+
+            # TD update
+            Vtd[s] = Vtd[s] +  (α^(1.0 / Ntd[s])) * (r + γ * Vtd[t] - Vtd[s])
+
+            # update state
+            s = t
+        end
+    end
+
+    return Vtd
+end
+
+Vtd = TD_prediction(; max_iter = 10)
+Vmatrix_td = zeros(8, 8)
+
+for s in S
+    Vmatrix_td[s.x + 1, s.y + 1] = Vtd[s]
+end
+@show Vmatrix_td
