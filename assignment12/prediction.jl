@@ -25,7 +25,7 @@ for (k, v) in maze_grid
         push!(S, MazeState(k[1], k[2]))
     end
 end
-length(S)
+S_dim = length(S)
 T = []
 for (k, v) in maze_grid
     if v == :GOAL
@@ -167,3 +167,62 @@ for s in S
     Vmatrix_td[s.x + 1, s.y + 1] = Vtd[s]
 end
 @show Vmatrix_td
+
+
+# table features
+function features(s)
+    x = zeros(S_dim)
+
+    for (i, si) in enumerate(S)
+        if s == si
+            x[i] = 1.0
+        end
+    end
+
+    return x
+end
+
+s1 = rand(N)
+features(s1)
+
+# TD prediction
+function TD_nstep_linear_approx_prediction(; n = 5, max_iter = 100)
+    Vtd = Dict([s => 0.0 for s in S]) # value function approximation
+    w = zeros(S_dim) # linear value function approximation
+    Ntd = Dict([s => 0 for s in S])   # counter
+
+    α = 1.0 # learning rate
+
+    for i = 1:max_iter
+        s = rand(N) # random initial state
+        x = features(s)
+        # @show Vw = w' * x
+
+        Ntd[s] += 1
+        _s, _a, _r = rollout(; s1 = s, max_iter = n)
+        idx = min(n, length(_r))
+        # @show length(_s)
+        # @show length(_a)
+        # @show idx
+        # @show _s[idx+1]
+        G = discounted_return(_r[1:idx], γ) + (γ^idx) * w' * features(_s[idx+1])
+
+        # w .+= (1.0 / Ntd[s]) * (G - w' * x) .* x
+        w .+= 1.0 * (G - w' * x) .* x
+        # w .+= (1.0 / Ntd[s]) * (V[s] - w' * x) .* x
+    end
+
+    for s in S
+        Vtd[s] = w' * features(s)
+    end
+    return Vtd, w
+end
+
+Vtd_approx, w = TD_nstep_linear_approx_prediction(n = 1, max_iter = 10000)
+
+Vmatrix_td_approx = zeros(8, 8)
+
+for s in S
+    Vmatrix_td_approx[s.x + 1, s.y + 1] = Vtd_approx[s]
+end
+@show Vmatrix_td_approx
