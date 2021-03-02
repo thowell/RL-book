@@ -235,8 +235,8 @@ function TD_prediction(; max_iter = 100)
             r = R[(s, a, t)]
 
             # TD update
-            Vtd[s] = Vtd[s] +  (α^(1.0 / Ntd[s])) * (r + γ * Vtd[t] - Vtd[s])
-            # Vtd[s] = Vtd[s] +  (α / Ntd[s]) * (r + γ * Vtd[t] - Vtd[s])
+            Vtd[s] = Vtd[s] +  (α / (α + Ntd[s])) * (r + γ * Vtd[t] - Vtd[s])
+            Vtd[s] = Vtd[s] +  α * (r + γ * Vtd[t] - Vtd[s])
 
             # update state
             s = t
@@ -246,10 +246,12 @@ function TD_prediction(; max_iter = 100)
     return Vtd
 end
 
-Vtd = TD_prediction(; max_iter = 10)
+Vtd = TD_prediction(; max_iter = 10000)
 Vmatrix_td = zeros(8, 8)
 
 for s in S
     Vmatrix_td[s.x + 1, s.y + 1] = Vtd[s]
 end
 @show Vmatrix_td
+
+1 / log(1 + 100)
