@@ -189,7 +189,6 @@ features(s1)
 function TD_nstep_linear_approx_prediction(; n = 5, max_iter = 100)
     Vtd = Dict([s => 0.0 for s in S]) # value function approximation
     w = zeros(S_dim) # linear value function approximation
-    Ntd = Dict([s => 0 for s in S])   # counter
 
     α = 1.0 # learning rate
 
@@ -197,8 +196,6 @@ function TD_nstep_linear_approx_prediction(; n = 5, max_iter = 100)
         s = rand(N) # random initial state
         x = features(s)
         # @show Vw = w' * x
-
-        Ntd[s] += 1
         _s, _a, _r = rollout(; s1 = s, max_iter = n)
         idx = min(n, length(_r))
         # @show length(_s)
