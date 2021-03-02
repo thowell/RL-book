@@ -1,0 +1,38 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage,graphicx,psfrag,amsmath,amsfonts,verbatim}
+\usepackage[small,bf]{caption}
+\usepackage{float}
+
+\input defs.tex
+
+\title{Assignment 11 CME 241}
+\author{Taylor Howell}
+
+\begin{document}
+\maketitle
+
+\newpage
+\section{Tabular Monte Carlo Prediction}
+I implement tabular Monte Carlo prediction from scatch in Julia, see \texttt{prediction.jl}.
+
+\section{Tabular Temporal-Difference Prediction}
+I implement tabular Temporal-Difference prediction from scratch in Julia, see \texttt{prediction.jl}.
+I tried two different schemes for reducing the learning rate:
+
+$$ V(s) = V(s) + 1.0 / N(s) (r + \gamma V(s') - V(s))$$
+
+$$ V(s) = V(s) + 1.0 (r + \gamma V(s') - V(s))$$
+
+\section{Testing MC and TD Prediction}
+I tested my implementations of MC and TD prediction on the grid world problem from the midterm. I used the optimal policy computed with value iteration to formulate a Markov reward process that can be used for the prediction problem (\texttt{prediction.jl}). 
+
+Both MC and TD are able to converge to the optimal value function. In my experiments I find that TD prediction converges significantly faster using a constant learning rate.
+
+\section{Random Walk Markov Reward Process}
+I implement the random walk in 2D Markov reward process in \texttt{random_walk_prediction.jl}. Both techniques converge to a similar value function that has larger values in the bottom right corner (i.e., ($B_1, B_2$)) and a gradient of decreasing values to the top left corner (i.e., ($0, 0$)). I find that TD converges more quickly using the simple $1 / N(s)$ learning rate compared to a constant value.
+
+
+\clearpage
+
+
+\end{document}
