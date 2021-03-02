@@ -147,7 +147,7 @@ function sample_next_state(s, a, S)
 end
 
 function rollout(; max_iter = 100)
-    s = [rand(S)] # random initial state
+    s = [rand(N)] # random initial non-terminal state
     a = []
     r = []
 
@@ -227,7 +227,7 @@ function TD_prediction(; max_iter = 100)
     α = 1.0 # learning rate
 
     for i = 1:max_iter
-        s = rand(S) # random initial state
+        s = rand(N) # random initial state
         while s ∉ T
             Ntd[s] += 1
             a = Π[s]
@@ -236,6 +236,7 @@ function TD_prediction(; max_iter = 100)
 
             # TD update
             Vtd[s] = Vtd[s] +  (α^(1.0 / Ntd[s])) * (r + γ * Vtd[t] - Vtd[s])
+            # Vtd[s] = Vtd[s] +  (α / Ntd[s]) * (r + γ * Vtd[t] - Vtd[s])
 
             # update state
             s = t
