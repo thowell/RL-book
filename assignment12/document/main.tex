@@ -5,15 +5,38 @@
 
 \input defs.tex
 
-\title{Assignment 12 CME 241}
+\title{\textbf{Assignment 12 CME 241}}
 \author{Taylor Howell}
 
 \begin{document}
 \maketitle
 
 \newpage
-\section{}
+\section{n-Step Bootstrapping Prediction}
+I implemented n-Step prediction in Julia, see \texttt{nstep\_prediction.jl}.
+
+\section{TD($\lambda$) Prediction}
+I implemented TD($\lambda$) prediction in Julia, see \texttt{td\_lambda\_prediction.jl}.
+
+\newpage
+\section{MC Error As Sum of Discounted TD Errors}.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.75\textwidth]{ipad/q3.jpg}
+	\caption{Handwritten solution proving that the Monte Carlo error can be written as the sum of discounted TD errors.}
+	\label{td_error}
+\end{figure}
+
 \clearpage
 
+\section{Testing Implementation of TD($\lambda$)}
+I use the grid world Markov decision process along with the optimal deterministic policy from the midterm to formulate a Markov reward process for testing my implementation of TD($\lambda$) prediction, see \texttt{td\_lambda\_prediction.jl}
+
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=.75\textwidth]}
+%	\caption{}
+%	\label{}
+%\end{figure}
 
 \end{document}
