@@ -147,31 +147,34 @@ function discounted_return(r, γ)
 end
 
 # Monte Carlo control
-function monte_carlo_control(; iter = 100)
+function sarsa(; iter = 100)
     Qmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Nmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Πmc = Dict([s => rand(A[s]) for s in N]) # random initial policy
     println("Monte Carlo Control")
 
     for k = 1:iter
-        k % 100 == 0 && println("iter: $k")
+        s = rand(N)
+        while s ∉ T
+            k % 100 == 0 && println("iter: $k")
 
-        ϵ = 1.0 / k
+            ϵ = 1.0 / k
 
-        # rollout
-        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+            a = ϵ_greedy_policy(Π, s, ϵ)
+            t = sample_next_state(s, a, S)
+            r = R[(s[end-1], a[end], s[end])]
+            # update action-value function
+            for t = 1:length(s)-1
+                Nmc[(s[t], a[t])] += 1
+                G = discounted_return(r[t:end], γ)
+                Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
+                # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
+            end
 
-        # update action-value function
-        for t = 1:length(s)-1
-            Nmc[(s[t], a[t])] += 1
-            G = discounted_return(r[t:end], γ)
-            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
-            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
-        end
-
-        # policy update
-        for s in N
-            Πmc[s] = argmax(Dict([a => Qmc[(s, a)] for a in A[s]]))
+            # policy update
+            for s in N
+                Πmc[s] = argmax(Dict([a => Qmc[(s, a)] for a in A[s]]))
+            end
         end
     end
 

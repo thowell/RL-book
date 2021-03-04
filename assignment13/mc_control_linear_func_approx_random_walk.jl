@@ -146,8 +146,28 @@ function discounted_return(r, γ)
     return G
 end
 
+num_features = sum([length(A[s]) for s in N])
+
+function features(s, a)
+    x = zeros(num_features)
+    id = 1
+    for _s in N
+        for _a in A[_s]
+            if (s, a) == (_s, _a)
+                x[id] = 1.0
+                return x
+            else
+                id += 1
+            end
+        end
+    end
+    @warn "invalid state-action pair"
+    return x
+end
+
 # Monte Carlo control
 function monte_carlo_control(; iter = 100)
+    w = zeros(num_features)
     Qmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Nmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Πmc = Dict([s => rand(A[s]) for s in N]) # random initial policy
@@ -159,26 +179,32 @@ function monte_carlo_control(; iter = 100)
         ϵ = 1.0 / k
 
         # rollout
-        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 100)
 
         # update action-value function
         for t = 1:length(s)-1
             Nmc[(s[t], a[t])] += 1
             G = discounted_return(r[t:end], γ)
-            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
-            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
+            w += (1 / Nmc[(s[t], a[t])]) * (G - w' * features(s[t], a[t])) * features(s[t], a[t])
+            # w += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - w' * features(s[t], a[t])) * features(s[t], a[t])
         end
 
         # policy update
         for s in N
-            Πmc[s] = argmax(Dict([a => Qmc[(s, a)] for a in A[s]]))
+            Πmc[s] = argmax(Dict([a => w' * features(s, a) for a in A[s]]))
         end
     end
 
-    return Qmc, Πmc
+    for s in N
+        for a in A[s]
+            Qmc[(s, a)] = w' * features(s, a)
+        end
+    end
+
+    return Qmc, Πmc, w
 end
 
-Qmc, Πmc = monte_carlo_control(iter = 10000000)
+Qmc, Πmc, wmc = monte_carlo_control(iter = 10000000)
 Vmc = Dict([s => (s ∈ T ? 0.0 : Qmc[(s, Πmc[s])]) for s in S])
 
 @show Πmc

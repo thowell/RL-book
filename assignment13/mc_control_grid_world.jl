@@ -189,6 +189,7 @@ function monte_carlo_control(; iter = 100)
     Qmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Nmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     Πmc = Dict([s => rand(A[s]) for s in N]) # random initial policy
+    #Πmc = Π
     println("Monte Carlo Control")
 
     for k = 1:iter
@@ -197,7 +198,8 @@ function monte_carlo_control(; iter = 100)
         ϵ = 1.0 / k
 
         # rollout
-        s, a, r, status = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+        s, a, r, status = rollout(Πmc, ϵ = ϵ, max_iter = 100000)
+
 
         # !status && continue
 
@@ -205,28 +207,20 @@ function monte_carlo_control(; iter = 100)
         for t = 1:length(s)-1
             Nmc[(s[t], a[t])] += 1
             G = discounted_return(r[t:end], γ)
-            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
-            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
+            #Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
+            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
         end
 
-        # ϵ-greedy update
-
+        # policy update
         for s in N
             Πmc[s] = argmax(Dict([a => Qmc[(s, a)] for a in A[s]]))
         end
-        #     if rand(1)[1] <= 1.0 - ϵ
-        #         Πmc[s] = argmax(Dict([a => Qmc[(s, a)] for a in A[s]]))
-        #     else
-        #         Πmc[s] = rand(A[s])
-        #     end
-        # end
-        # Nmc = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     end
 
     return Qmc, Πmc
 end
 
-Qmc, Πmc = monte_carlo_control(iter = 10000)
+Qmc, Πmc = monte_carlo_control(iter = 10)
 Vmc = Dict([s => (s ∈ T ? 0.0 : Qmc[(s, Πmc[s])]) for s in S])
 
 Vmatrix_mc = zeros(8, 8)
