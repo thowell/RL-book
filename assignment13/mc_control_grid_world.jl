@@ -159,6 +159,7 @@ function rollout(Π; ϵ = 0.0, max_iter = 100)
     a = []
     r = []
 
+    status = true
     iter = 1
     while s[end] ∉ T
         push!(a, ϵ_greedy_policy(Π, s[end], ϵ))
@@ -166,9 +167,13 @@ function rollout(Π; ϵ = 0.0, max_iter = 100)
         push!(r, R[(s[end-1], a[end], s[end])])
 
         iter += 1
-        iter > max_iter && break
+        if iter > max_iter
+            @warn "episode not terminated"
+            status = false
+            break
+        end
     end
-    return s, a, r
+    return s, a, r, status
 end
 
 function discounted_return(r, γ)
@@ -187,19 +192,21 @@ function monte_carlo_control(; iter = 100)
     println("Monte Carlo Control")
 
     for k = 1:iter
-        k % 100 == 0 && println("iter: $k")
+        k % (iter / 10) == 0 && println("iter: $k")
 
         ϵ = 1.0 / k
 
         # rollout
-        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+        s, a, r, status = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+
+        # !status && continue
 
         # update action-value function
         for t = 1:length(s)-1
             Nmc[(s[t], a[t])] += 1
             G = discounted_return(r[t:end], γ)
-            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
-            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
+            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
+            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
         end
 
         # ϵ-greedy update
@@ -219,7 +226,7 @@ function monte_carlo_control(; iter = 100)
     return Qmc, Πmc
 end
 
-Qmc, Πmc = monte_carlo_control(iter = 1000)
+Qmc, Πmc = monte_carlo_control(iter = 10000)
 Vmc = Dict([s => (s ∈ T ? 0.0 : Qmc[(s, Πmc[s])]) for s in S])
 
 Vmatrix_mc = zeros(8, 8)

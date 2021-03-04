@@ -91,7 +91,7 @@ V, Π = value_iteration(S, A, P, R;
     V = Dict([s => 0.0 for s in S]),
     T = T,
     N = setdiff(S, T),
-    γ = γ, iter = 100, verbose = false)
+    γ = γ, iter = 1000, verbose = false)
 
 Vmatrix = zeros(B1 + 1, B2 + 1)
 
@@ -130,7 +130,10 @@ function rollout(Π; ϵ = 0.0, max_iter = 100)
         push!(r, R[(s[end-1], a[end], s[end])])
 
         iter += 1
-        iter > max_iter && break
+        if iter > max_iter
+            @warn "episode not complete"
+            break
+        end
     end
     return s, a, r
 end
@@ -156,14 +159,14 @@ function monte_carlo_control(; iter = 100)
         ϵ = 1.0 / k
 
         # rollout
-        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 1000)
+        s, a, r = rollout(Πmc, ϵ = ϵ, max_iter = 10)
 
         # update action-value function
         for t = 1:length(s)-1
             Nmc[(s[t], a[t])] += 1
             G = discounted_return(r[t:end], γ)
-            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
-            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
+            # Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (G - Qmc[(s[t], a[t])])
+            Qmc[(s[t], a[t])] += (1 / Nmc[(s[t], a[t])]) * (V[s[t]] - Qmc[(s[t], a[t])])
         end
 
         # ϵ-greedy update
@@ -183,9 +186,10 @@ function monte_carlo_control(; iter = 100)
     return Qmc, Πmc
 end
 
-Qmc, Πmc = monte_carlo_control(iter = 1000000)
+Qmc, Πmc = monte_carlo_control(iter = 100)
 Vmc = Dict([s => (s ∈ T ? 0.0 : Qmc[(s, Πmc[s])]) for s in S])
 
+@show Πmc
 Vmatrix_mc = zeros(B1 + 1, B2 + 1)
 
 for s in S
