@@ -29,7 +29,6 @@ function value_iteration(S, A, P, R;
             # @show V[s] - V_new[s]
             err += (V[s] - V_new[s])^2.0
         end
-        # @show err
 
         V = copy(V_new)
         V_new = Dict()
