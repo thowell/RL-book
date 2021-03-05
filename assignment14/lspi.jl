@@ -48,9 +48,10 @@ function state_action_transition(s, a)
         return (s.x + 1, s.y)
     end
 end
+
 A_set = [:LEFT, :RIGHT, :UP, :DOWN]
 A = Dict()
-for s in N
+for s in S
     _a = []
     for a in A_set
         t = MazeState(state_action_transition(s, a)...)
@@ -176,28 +177,29 @@ function rollout(Π; ϵ = 0.0, max_iter = 100)
     return s, a, r, status
 end
 
-num_features = length(N)
+num_features = sum([length(A[s]) for s in N])
 
-function features(s)
+function features(s, a)
     x = zeros(num_features)
     id = 1
     for _s in N
-        if s == _s
-            x[id] = 1.0
-            return x
-        else
-            id += 1
+        for _a in A[_s]
+            if (s, a) == (_s, _a)
+                x[id] = 1.0
+                return x
+            else
+                id += 1
+            end
         end
     end
-    # @warn "invalid state pair"
     return x
 end
-
-function lstd(; iter = 100)
-    w = zeros(num_features)
+length(N)
+function lspi(; iter = 100)
+    w = 0.1 * rand(num_features)
     Als = zeros(num_features, num_features)
     bls = zeros(num_features)
-    println("Least-Squares Temporal-Difference Prediction")
+    println("Least-Squares Policy Iteration")
 
     for k = 1:iter
         k % 100 == 0 && println("iter: $k")
@@ -206,31 +208,41 @@ function lstd(; iter = 100)
             a = Π[s]
             t = sample_next_state(s, a, S)
             r = R[(s, a, t)]
-
-            Als .+= features(s) * (features(s) - γ * features(t))'
-            bls .+= r * features(s)
+            # b = argmax(Dict([a => w' * features(t, a) for a in A[t]]))
+            b = t ∈ T ? rand(A_set) : Π[t]
+            Als .+= features(s, a) * (features(s, a) - γ * features(t, b))'
+            bls .+= r * features(s, a)
 
             s = t
         end
     end
 
-    # @show rank(A)
-    # compute weights
-    w = (Als' * Als) \ (Als' * bls)
+    @show rank(Als)
+    @show rank(Als' * Als)
 
-    Vlstd = Dict([s => 0.0 for s in S])
+    # compute weights
+    w = (Als' * Als) \ Als' * bls
+
+    Qlspi = Dict([(s, a) => 0.0 for s in S for a in A[s]])
     for s in S
-        Vlstd[s] = w' * features(s)
+        for a in A[s]
+            Qlspi[(s, a)] = w' * features(s, a)
+        end
     end
 
-    return Vlstd, w
+    return Qlspi, w
 end
 
-Vlstd, w = lstd(iter = 100)
+Qlspi, w = lspi(iter = 1000)
+Vlspi = Dict([s => (s ∈ T ? 0.0 : Qlspi[(s, argmax(Dict([a => Qlspi[(s, a)] for a in A[s]])))]) for s in S])
+Πlspi = Dict()
+for s in N
+    Πlspi[s] = argmax(Dict([a => Qlspi[(s, a)] for a in A[s]]))
+end
 
-Vmatrix_lstd = zeros(8, 8)
+Vmatrix_lspi = zeros(8, 8)
 
 for s in S
-    Vmatrix_lstd[s.x + 1, s.y + 1] = Vlstd[s]
+    Vmatrix_lspi[s.x + 1, s.y + 1] = Vlspi[s]
 end
-@show Vmatrix_lstd
+@show Vmatrix_lspi
