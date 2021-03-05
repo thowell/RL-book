@@ -109,17 +109,37 @@ function sample_next_state(s, a, S)
     sample(S, Weights(probs))
 end
 
-function ϵ_greedy_policy(Q, s, ϵ)
+function ϵ_greedy_policy(w, s, ϵ)
     if rand(1)[1] <= 1.0 - ϵ
-        return argmax(Dict([a => Q[(s, a)] for a in A[s]]))
+        return argmax(Dict([a => w' * features(s, a) for a in A[s]]))
     else
         println("random action!")
         return rand(A[s])
     end
 end
 
+num_features = sum([length(A[s]) for s in S])
+
+function features(s, a)
+    x = zeros(num_features)
+    id = 1
+    for _s in S
+        for _a in A[_s]
+            if (s, a) == (_s, _a)
+                x[id] = 1.0
+                return x
+            else
+                id += 1
+            end
+        end
+    end
+    @warn "invalid state-action pair"
+    return x
+end
+
 # Sarsa
 function sarsa(; iter = 100)
+    w = zeros(num_features)
     Qsa = Dict([(s, a) => 0.0 for s in S for a in A[s]])
     # Nsa = Dict([(s, a) => 0.0 for s in N for a in A[s]])
     println("\nSarsa")
@@ -131,18 +151,18 @@ function sarsa(; iter = 100)
 
         ϵ = 1.0 / k
         s = rand(N)
-        a = ϵ_greedy_policy(Qsa, s, ϵ)
+        a = ϵ_greedy_policy(w, s, ϵ)
         while s ∉ T
             # @show s
             # @show a
 
             t = sample_next_state(s, a, S)
             r = R[(s, a, t)]
-            b = ϵ_greedy_policy(Qsa, t, ϵ)
+            b = ϵ_greedy_policy(w, t, ϵ)
 
             # update Q function
-            Qsa[(s, a)] += (α / k) * (r + γ * Qsa[(t, b)] - Qsa[(s, a)])
-            # Qsa[(s, a)] += (α / k) * (V[s] - Qsa[(s, a)])
+            w += (α / k) * (r + γ * w' * features(t, b) - w' * features(s, a)) * features(s, a)
+            # w += (α / k) * (V[s] - w' * features(s, a)) * features(s, a)
 
             # step
             s = t
@@ -150,10 +170,16 @@ function sarsa(; iter = 100)
         end
     end
 
-    return Qsa
+    for s in N
+        for a in A[s]
+            Qsa[(s, a)] = w' * features(s, a)
+        end
+    end
+
+    return Qsa, w
 end
 
-Qsa = sarsa(iter = 100000)
+Qsa, w = sarsa(iter = 100000)
 Vsa = Dict([s => (s ∈ T ? 0.0 : Qsa[(s, argmax(Dict([a => Qsa[(s, a)] for a in A[s]])))]) for s in S])
 Πsa = Dict()
 for s in N
