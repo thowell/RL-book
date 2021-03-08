@@ -216,7 +216,8 @@ function lstd(; iter = 100)
 
     # @show rank(A)
     # compute weights
-    w = (Als' * Als) \ (Als' * bls)
+    # w = (Als' * Als) \ (Als' * bls)
+    w = pinv(Als) * bls
 
     Vlstd = Dict([s => 0.0 for s in S])
     for s in S

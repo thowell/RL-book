@@ -1,16 +1,12 @@
 using StatsBase, LinearAlgebra
 
 include("initialize_transitions.jl")
-include("grid_maze.jl")
 include("value_iteration.jl")
 
-maze = zeros(8, 8)
-for (k, v) in maze_grid
-    if v == :SPACE || v == :GOAL
-        maze[k[1] + 1, k[2] + 1] = 1
-    end
-end
-@show maze
+# random walk
+B1 = 4
+B2 = 4
+maze = zeros(B1 + 1, B2 + 1)
 
 # states
 struct MazeState
@@ -19,19 +15,22 @@ struct MazeState
 end
 
 S = []
-for (k, v) in maze_grid
-    if v == :SPACE || v == :GOAL
-        # println(v)
-        push!(S, MazeState(k[1], k[2]))
+for i = 0:B1
+    for j = 0:B2
+        push!(S, MazeState(i, j))
     end
 end
 length(S)
+
 T = []
-for (k, v) in maze_grid
-    if v == :GOAL
-        # println(v)
-        push!(T, MazeState(k[1], k[2]))
-    end
+for j = 0:B2
+    push!(T, MazeState(0, j))
+    push!(T, MazeState(B1, j))
+end
+
+for i = 0:B1
+    push!(T, MazeState(i, 0))
+    push!(T, MazeState(i, B2))
 end
 
 N = setdiff(S, T)
@@ -48,7 +47,6 @@ function state_action_transition(s, a)
         return (s.x + 1, s.y)
     end
 end
-
 A_set = [:LEFT, :RIGHT, :UP, :DOWN]
 A = Dict()
 for s in S
@@ -73,52 +71,19 @@ end
 
 # rewards
 # option 1
-γ = 1
+γ = 0.9
 R = initialize_transitions(S, A, N = N, init = 0.0)
 for s in N
     for a in A[s]
         t = MazeState(state_action_transition(s, a)...)
-        R[(s, a, t)] = -1.0
+        if t.x == B1
+            R[(s, a, t)] = 1.0
+        end
+        if t.y == B2
+            R[(s, a, t)] = 1.0
+        end
     end
 end
-
-# # option 2
-# γ2 = 0.9
-# R2 = initialize_transitions(S, A, N = N, init = 0.0)
-#
-# for t in T
-#     s = MazeState(t.x, t.y + 1)
-#     if s in S
-#         if maze_grid[(s.x, s.y)] == :SPACE
-#             a = :LEFT
-#             R2[(s, a, t)] = 1.0
-#         end
-#     end
-#
-#     s = MazeState(t.x, t.y - 1)
-#     if s in S
-#         if maze_grid[(s.x, s.y)] == :SPACE
-#             a = :RIGHT
-#             R2[(s, a, t)] = 1.0
-#         end
-#     end
-#
-#     s = MazeState(t.x + 1, t.y)
-#     if s in S
-#         if maze_grid[(s.x, s.y)] == :SPACE
-#             a = :UP
-#             R2[(s, a, t)] = 1.0
-#         end
-#     end
-#
-#     s = MazeState(t.x - 1, t.y)
-#     if s in S
-#         if maze_grid[(s.x, s.y)] == :SPACE
-#             a = :DOWN
-#             R2[(s, a, t)] = 1.0
-#         end
-#     end
-# end
 
 # value iteration
 # rewards option 1
@@ -126,12 +91,9 @@ V, Π = value_iteration(S, A, P, R;
     V = Dict([s => 0.0 for s in S]),
     T = T,
     N = setdiff(S, T),
-    γ = γ, iter = 100, verbose = false)
+    γ = γ, iter = 1000, verbose = false)
 
-pretty_print2(V)
-pretty_print2(Π)
-
-Vmatrix = zeros(8, 8)
+Vmatrix = zeros(B1 + 1, B2 + 1)
 
 for s in S
     Vmatrix[s.x + 1, s.y + 1] = V[s]
@@ -194,34 +156,46 @@ function features(s, a)
     end
     return x
 end
-length(N)
-function lspi(; iter = 100)
+
+
+function lspi(; iter_batch = 1000, iter_policy = 1000)
     w = 0.1 * rand(num_features)
     Als = zeros(num_features, num_features)
     bls = zeros(num_features)
     println("Least-Squares Policy Iteration")
 
-    for k = 1:iter
-        k % 100 == 0 && println("iter: $k")
-        s = rand(N)
-        while s ∉ T
-            a = Π[s]
-            t = sample_next_state(s, a, S)
-            r = R[(s, a, t)]
-            # b = argmax(Dict([a => w' * features(t, a) for a in A[t]]))
-            b = t ∈ T ? rand(A_set) : Π[t]
-            Als .+= features(s, a) * (features(s, a) - γ * features(t, b))'
-            bls .+= r * features(s, a)
-
-            s = t
-        end
+    Πlspi = Dict()
+    for s in N
+        Πlspi[s] = argmax(Dict([a => w' * features(s, a) for a in A[s]]))
     end
 
-    @show rank(Als)
-    @show rank(Als' * Als)
+    for j = 1:iter_policy
+        for k = 1:iter_batch
+            k % 100 == 0 && println("iter: $k")
+            s = rand(N)
+            while s ∉ T
+                a = ϵ_greedy_policy(Πlspi, s, 1 / j)
+                t = sample_next_state(s, a, S)
+                r = R[(s, a, t)]
+                b = t ∉ T ? argmax(Dict([a => w' * features(t, a_) for a_ in A[t]])) : rand(A_set)
+                Als .+= features(s, a) * (features(s, a) - γ * features(t, b))'
+                bls .+= r * features(s, a)
 
-    # compute weights
-    w = (Als' * Als) \ Als' * bls
+                s = t
+            end
+        end
+
+        @show rank(Als)
+        @show rank(Als' * Als)
+
+        # compute weights
+        w = pinv(Als) * bls
+
+        # update policy
+        for s in N
+            Πlspi[s] = argmax(Dict([a => w' * features(s, a) for a in A[s]]))
+        end
+    end
 
     Qlspi = Dict([(s, a) => 0.0 for s in S for a in A[s]])
     for s in S
@@ -233,14 +207,14 @@ function lspi(; iter = 100)
     return Qlspi, w
 end
 
-Qlspi, w = lspi(iter = 1000)
+Qlspi, w = lspi(iter_batch = 1000, iter_policy = 10)
 Vlspi = Dict([s => (s ∈ T ? 0.0 : Qlspi[(s, argmax(Dict([a => Qlspi[(s, a)] for a in A[s]])))]) for s in S])
 Πlspi = Dict()
 for s in N
     Πlspi[s] = argmax(Dict([a => Qlspi[(s, a)] for a in A[s]]))
 end
 
-Vmatrix_lspi = zeros(8, 8)
+Vmatrix_lspi = zeros(B1 + 1, B2 + 1)
 
 for s in S
     Vmatrix_lspi[s.x + 1, s.y + 1] = Vlspi[s]
