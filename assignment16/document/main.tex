@@ -14,15 +14,23 @@
 \newpage
 
 \section{Monte Carlo Policy Gradient (REINFORCE)}
-For this problem I implemented REINFORCE in Julia. I initially applied the algorithm to the asset allocation problem from chapter 7 (\texttt{q1_asset_allocation.jl}). I parameterized my policy using a Gaussian in order optimize over the continuous action space. However, the algorithm kept diverging. I then implemented the short-corridor grid world Markov decision process from Sutton and Barto and was able to approximately solve the problem using REINFORCE (\texttt{short_corridor_reinforce.jl}).
+For this problem I implemented REINFORCE in Julia. I initially applied the algorithm to the asset allocation problem from chapter 7 (\texttt{q1\_asset\_allocation.jl}). I parameterized my policy using a Gaussian in order optimize over the continuous action space. However, the algorithm kept diverging. I then implemented the short-corridor grid world Markov decision process from Sutton and Barto and was able to approximately solve the problem a softmax parameterized policy using REINFORCE (\texttt{short\_corridor\_reinforce.jl}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=.75\textwidth]{figures/sc_gw_reinforce.png}
-	\caption{Return for short-corridor grid world during training with REINFORCE.}
+	\caption{Return averaged over 100 episodes for short-corridor grid world during training with REINFORCE. The optimal return is: $G_0^* \approx 11$.}
 	\label{}
 \end{figure}
 
-\section{Actor-Critic Eligibility Traces}
+\section{Actor-Critic With Eligibility Traces}
+I implemented Actor-Critic with eligibility traces and test it on the same grid world MDP as above (\texttt{short\_corridor\_ac.jl}). Empirically, this algorithm seems to able to utilize larger learning rates and converge to the optimal policy more reliably compared to REINFORCE.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.75\textwidth]{figures/sc_gw_ac.png}
+	\caption{Return averaged over 100 episodes for short-corridor grid world during training with Actor-Critic with eligibility traces. The optimal return is: $G_0^* \approx 11$.}
+	\label{}
+\end{figure}
 
 \end{document}
