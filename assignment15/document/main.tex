@@ -3,6 +3,16 @@
 \usepackage[small,bf]{caption}
 \usepackage{float}
 
+\usepackage{booktabs}
+\usepackage{array}
+\newcommand*\rotbf[1]{\rotatebox{90}{\textbf{#1}}}
+\newcommand{\specialcell}[2][c]{\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+\newcommand{\specialcellbold}[2][c]{%
+	\bfseries
+	\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}%
+}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
 \input defs.tex
 
 \title{\textbf{Assignment 15 CME 241}}
@@ -13,7 +23,30 @@
 
 \newpage
 
-\section{Question 1}
-I implemented the maximum likelihood Markov model, Monte Carlo prediction, TD(0) prediction, and least-squares TD in Julia (\texttt{estimate_value_function.jl}). 
+\section{Experience Replay}
+I implemented the maximum likelihood Markov model, Monte Carlo prediction, TD(0) prediction, and least-squares TD prediction in Julia (\texttt{estimate\_value\_function.jl}). 
+The value function for each approach are shown in Table \ref{er_vf_table}.
+
+\begin{table}[H]
+	\centering
+	\caption{Approximate value functions computed using experience replay.}
+	\begin{tabular}{c c c c c}
+		\toprule
+		\textbf{V(s)} &
+		\specialcellbold{MRP} &
+		\specialcellbold{MC} &
+		\specialcellbold{TD(0)} &
+		\specialcellbold{LSTD} \\
+		\toprule
+		s = A & 12.9 & 9.57 & 12.9 & 12.9 \\
+		s = B & 9.6 & 5.64 & 9.6 & 9.6 \\
+		\toprule
+	\end{tabular}
+	\label{er_vf_table}
+\end{table}
+
+For MC and TD(0), the experience is iterated over one million times. For TD(0), a learning rate with decay is utilized (following the example) code. I find that TD(0) and LSTD converge to the same value function as computed with the maximum likelihood MRP, unlike MC. This agrees with the theory tells us that temporal difference learning converges to the maximum likelihood Markov model, whereas MC converges to the solution with the minimum mean-squared error between the observed returns and true value function. I also observe that least-squares temporal difference learning is much more efficient that gradient-based methods like TD(0) for converging to the value function.
+
+\section{}
 
 \end{document}
