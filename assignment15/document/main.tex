@@ -47,6 +47,7 @@ The value function for each approach are shown in Table \ref{er_vf_table}.
 
 For MC and TD(0), the experience is iterated over one million times. For TD(0), a learning rate with decay is utilized (following the example) code. I find that TD(0) and LSTD converge to the same value function as computed with the maximum likelihood MRP, unlike MC. This agrees with the theory tells us that temporal difference learning converges to the maximum likelihood Markov model, whereas MC converges to the solution with the minimum mean-squared error between the observed returns and true value function. I also observe that least-squares temporal difference learning is much more efficient that gradient-based methods like TD(0) for converging to the value function.
 
-\section{}
+\section{TD With Gradient Correction}
+I implemented TD with gradient correction in Julia (\texttt{tdc.jl}) and apply it to the grid world MDP (using the optimal deterministic policy) from the midterm.
 
 \end{document}
